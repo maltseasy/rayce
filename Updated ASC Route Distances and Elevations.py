@@ -1,4 +1,6 @@
 import math
+import requests
+import json
 
 #equation to calculate distance between coordinates 
 def heversine(lon1, lat1, lon2, lat2):
@@ -23,6 +25,8 @@ def write_coords(condition,kml_filename):
         kml_data = kml_file.read()
 
     loops = []
+    weather_coord_list1 = []
+    queryFormattedCoords = []
     start = 0
     while True:
         start = kml_data.find('<coordinates>', start)
@@ -54,13 +58,41 @@ def write_coords(condition,kml_filename):
                     else:
                         distance = heversine(float(parts[0]), float(parts[1]), lon2, lat2)
                     total_distance += distance
+                    time = total_distance / 35
                     coordinate = str(total_distance) + "," + elevation + '\n'
                     loop_coordinates.append(coordinate)
-
-        loops.append(loop_coordinates)
+                
+                    latitude = parts[1]
+                    longitude = parts[0]
+                    
+                    weather_coord = latitude + "," + longitude + "," + str(time) + ':'
+                    weather_coord_list1.append(weather_coord)
+                    queryFormattedCoords.append(str(latitude)+","+str(longitude)+","+str(time))
+                    
+        loops.append(weather_coord_list1)
         start = end + len('</coordinates>') 
+    
+    first_60 = (":").join(queryFormattedCoords[:60])
+    print(first_60)
+    url = "https://atlas.microsoft.com/weather/route/json?&subscription-key=0AaKvkxb1Q452IX0NDW0zmN9TBKu1gquS5zoll4d5Ws&api-version=1.1&query=" + str(first_60)
+    weather_data = []
 
+    api_link = requests.get(url)
+    api_data = api_link.json()
 
+    print(api_data)
+
+    #to extract info from api
+    
+    #does this code extract cloud cover for ALL coordinates or just one?
+    cloud_cover = api_data["waypoints"]["cloudCover"]
+    wind_direction = api_data["wind"]["direction"]
+    wind_speed = api_data["wind"]["speed"]
+    
+    
+    weather_data.append(str(cloud_cover) + ", " + str(wind_direction) + ", " + str(wind_speed))
+    
+        
     #put data into csv files
     #optional loops
     if condition == True:
@@ -73,14 +105,14 @@ def write_coords(condition,kml_filename):
         loop_filenames =  ['Independence to Topeka.csv','Topeka to Grand Island.csv','Grand Island to Gering.csv','Gering to Casper.csv','Casper to Lander.csv','Lander to Montpelier.csv','Montpelier to Pocatello.csv','Pocatello to Twin Falls.csv']
             
     loop_index = 0
-    for loop_coordinates in loops:
+    for weather_coord_list1 in loops:
         loop_name = loop_names[loop_index]
         filename = loop_filenames[loop_index]
 
         with open(filename, 'w') as csvfile:
-            csvfile.write(loop_name+'\n'+'Distance (km), Elevation (m)\n')
-            for coord in loop_coordinates:
-                csvfile.write(coord)
+            csvfile.write(loop_name+'\n'+'latitude, longitude, Time (h)\n, , Cloud Cover, Wind Direction, Wind Speed\n')
+            for i in weather_data:
+                csvfile.write(i)
         loop_index += 1
 
 write_coords(True, 'data/Optional Loops.kml')
