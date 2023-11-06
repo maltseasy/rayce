@@ -1,2 +1,6 @@
-pykml==0.2.0
 requests==2.31.0
+numpy==1.26.1
+pandas==2.1.2
+scikit-learn==1.3.2
+folium==0.14.0
+branca==0.6.0
