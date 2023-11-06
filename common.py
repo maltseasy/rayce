@@ -35,10 +35,10 @@ class Checkpoint:
         self.wind_speed = wind_speed
     
     def __str__(self):
-        return f"Lat: {self.lat} | Lon: {self.lon} | Distance: {self.distance} | Azimuth: {self.azimuth} | Elevation: {self.elevation} | Cloud Cover: {self.cloud_cover} | Wind Dir: {self.wind_dir} | Wind Speed: {self.wind_speed}"
+        return f"Lat: {self.lat} | Lon: {self.lon} | Distance: {round(self.distance/1000,1)} \n| Azimuth: {round(self.azimuth,1)} | Elevation: {round(self.elevation,1)} | Cloud Cover: {self.cloud_cover} \n| Wind Dir: {self.wind_dir} | Wind Speed: {self.wind_speed}"
     
     def __repr__(self):
-        return f"Lat: {self.lat} | Lon: {self.lon} | Distance: {self.distance} | Azimuth: {self.azimuth} | Elevation: {self.elevation} | Cloud Cover: {self.cloud_cover} | Wind Dir: {self.wind_dir} | Wind Speed: {self.wind_speed}"
+        return f"Lat: {self.lat} | Lon: {self.lon} | Distance: {round(self.distance/1000,1)} \n| Azimuth: {round(self.azimuth,1)} | Elevation: {round(self.elevation,1)} | Cloud Cover: {self.cloud_cover} \n| Wind Dir: {self.wind_dir} | Wind Speed: {self.wind_speed}"
     
 class Route:
     def __init__(self, name: str, checkpoints: list[Checkpoint]):
@@ -83,14 +83,14 @@ def heversine_and_azimuth(lon1: float, lat1: float, lon2: float, lat2: float):
     return distance, azimuth
 
 def solar_power_out(max_irradiance: float, cloud_cover: float):
-    from sklearn.linear_model import LinearRegression
-    import numpy as np
+    # from sklearn.linear_model import LinearRegression
+    # import numpy as np
 
-    cell_power_x_data = np.array([200, 300, 400, 500, 600, 700, 800, 900, 1000]).reshape((-1,1))
-    cell_power_y_data = np.array([54, 83, 112, 141, 170, 200, 230, 260, 290])
-    irradiance_to_power_model = LinearRegression()
-    irradiance_to_power_model.fit(cell_power_x_data, cell_power_y_data)
-
+    # cell_power_x_data = np.array([200, 300, 400, 500, 600, 700, 800, 900, 1000]).reshape((-1,1))
+    # cell_power_y_data = np.array([54, 83, 112, 141, 170, 200, 230, 260, 290])
+    # irradiance_to_power_model = LinearRegression()
+    # irradiance_to_power_model.fit(cell_power_x_data, cell_power_y_data)
+    eff = 0.24
     solar_irradiance = (1 - cloud_cover) * max_irradiance
-
-    return irradiance_to_power_model.predict(np.array(solar_irradiance).reshape(1,-1))[0]
+    power_out = solar_irradiance * eff
+    return power_out
